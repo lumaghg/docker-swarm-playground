@@ -1,0 +1,23 @@
+version: "3.9"
+
+secrets:
+    playground_secret:
+        external: true
+
+services:
+    swarm-hello-world:
+        image: lumaghg/swarm-hello-world:latest
+        environment:
+            - port=4000
+            - SECRETMODE=DOCKER_SECRETS
+        ports:
+            - "4001:4000"
+        deploy:
+            replicas: 2
+            update_config:
+                parallelism: 1
+                delay: 20s
+                failure_action: rollback
+                monitor: 15s
+        secrets:
+            - playground_secret
