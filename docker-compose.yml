@@ -6,16 +6,17 @@ secrets:
 
 services:
     swarm-hello-world:
-        image: lumaghg/swarm-hello-world:latest
+        image: lumaghg/swarm-hello-world:11
         environment:
             - port=4000
             - SECRETMODE=DOCKER_SECRETS
         ports:
             - "4001:4000"
         deploy:
-            replicas: 2
+            replicas: 5
             update_config:
-                parallelism: 1
+                order: start-first
+                parallelism: 0
                 delay: 20s
                 failure_action: rollback
                 monitor: 15s

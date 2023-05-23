@@ -11,7 +11,11 @@ if (process.env.SECRETMODE === "DOCKER_SECRETS") {
 const app = express()
 
 app.get('/', (req, res) => {
-    res.send("This is Version 6.0\n<br>This is the Secret: " + process.env.SECRET + "<br>This is the time: " + new Date())
+    res.send("This is Version 10.0\n<br>This is the Secret: " + process.env.SECRET + "<br>This is the time: " + new Date())
+})
+
+app.get('/health', (req, res) => {
+    res.send()
 })
 
 console.log("starting up...")
