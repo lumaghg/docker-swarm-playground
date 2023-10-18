@@ -2,7 +2,7 @@ version: "3.9"
 
 networks:
     playground:
-        external: true
+        driver: overlay
 
 services:
     swarm-hello-world:
@@ -41,7 +41,7 @@ services:
             - "--tracing.jaeger.localAgentHostPort=jaeger:6831"
             - "--tracing.jaeger.propagation=jaeger"
             - "--api.insecure=true"
-            - "--providers.docker.network=playground"
+            - "--providers.docker.network=pg_playground"
         ports:
             - 80:80
 
