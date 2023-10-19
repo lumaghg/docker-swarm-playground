@@ -5,15 +5,10 @@ const api = require("@opentelemetry/api");
 const { W3CTraceContextPropagator } = require("@opentelemetry/core");
 const { JaegerPropagator } = require("@opentelemetry/propagator-jaeger");
 
-/* Set Global Propagator */
-//api.propagation.setGlobalPropagator(new JaegerPropagator());
 
 dotenv.config()
 
 
-
-//const activeSpan = api.trace.getSpan(api.context.active())
-//activeSpan.addEvent('started!', { randomIndex: 1 })
 
 const app = express()
 
@@ -22,8 +17,6 @@ app.get('/', (req, res) => {
 })
 
 app.get('/health', async (req, res) => {
-
-
     const span = tracer.startSpan('healthcheck...', { startTime: Date.now() })
     console.log('/health called')
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -33,7 +26,18 @@ app.get('/health', async (req, res) => {
 })
 
 app.get('/crash', (req, res) => {
-    res.status(500).send("CRASH!")
+    tracer.startActiveSpan('crashing', span => {
+        span.addEvent('starting operation')
+
+        span.addEvent('crashed!', {
+            'custom.testattr'
+                : 'meeeeeem hier kann der request body hin :)', 'custom.headers': JSON.stringify(req.headers), 'custom.baseurl': JSON.stringify(req.baseUrl)
+        })
+        span.setStatus({ code: api.SpanStatusCode.ERROR })
+        span.end()
+
+        res.status(500).send("CRASH!")
+    })
 })
 
 console.log("starting up...")

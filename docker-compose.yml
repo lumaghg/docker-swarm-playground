@@ -4,9 +4,13 @@ networks:
     playground:
         driver: overlay
 
+secrets:
+    PG_JAEGER_BASIC_AUTH:
+        external: true
+
 services:
     swarm-hello-world:
-        image: lumaghg/swarm-hello-world:20231017.11
+        image: lumaghg/swarm-hello-world:20231017.16
         ports:
             - 3000:4000
         environment:
@@ -63,8 +67,6 @@ services:
                 "--log-level=error",
                 "--span-storage.type=elasticsearch",
             ]
-        depends_on:
-            - elasticsearch
         ports:
             - 6831:6831/udp
             - 6832:6832/udp
@@ -80,6 +82,18 @@ services:
             - 4318:4318
         networks:
             - playground
+        deploy:
+            labels:
+                - "traefik.enable=true"
+                - "traefik.http.routers.jaeger.rule=Host(`jaeger.localhost`)"
+                - "traefik.http.routers.jaeger.entrypoints=web"
+                - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
+                - "traefik.http.routers.jaeger.middlewares=myauth"
+                #- "traefik.http.middlewares.myauth.basicauth.users=logs:$$2a$$12$$IJm.H6aol9cq5jTwip.spOina7czuNH2XM1qcd6jXqFptIAB2CBGO"
+                - "traefik.http.middlewares.myauth.basicauth.usersfile=/run/secrets/PG_JAEGER_BASIC_AUTH"
+
+        secrets:
+            - PG_JAEGER_BASIC_AUTH
 
     elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
