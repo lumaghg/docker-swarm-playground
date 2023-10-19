@@ -19,7 +19,7 @@ const { JaegerPropagator } = require("@opentelemetry/propagator-jaeger");
 module.exports = (serviceName) => {
     //const exporter = new ConsoleSpanExporter();
     const exporter = new JaegerExporter({ endpoint: "http://jaeger:14268/api/traces" })
-    //const exporter = new OTLPTraceExporter({ endpoint: "http://localhost:14268/v1/traces" });
+    //const exporter = new OTLPTraceExporter({ url: "http://jaeger:4318/v1/traces" });
     const provider = new NodeTracerProvider({
         resource: new Resource({
             [SemanticResourceAttributes.SERVICE_NAME]: serviceName,

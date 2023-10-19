@@ -10,9 +10,7 @@ secrets:
 
 services:
     swarm-hello-world:
-        image: lumaghg/swarm-hello-world:20231017.16
-        ports:
-            - 3000:4000
+        image: lumaghg/swarm-hello-world:20231017.20
         environment:
             - port=4000
         deploy:
@@ -21,14 +19,14 @@ services:
                 - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
                 - "traefik.http.routers.whoami.entrypoints=web"
                 - "traefik.http.services.whoami.loadbalancer.server.port=4000"
-            replicas: 2
+            replicas: 1
         networks:
             - playground
 
     traefik:
         image: "traefik:v2.9"
         command:
-            - "--log.level=DEBUG"
+            - "--log.level=WARN"
             - "--providers.docker=true"
             - "--providers.docker.exposedbydefault=false"
             - "--providers.docker.swarmMode=true"
@@ -42,16 +40,16 @@ services:
             - "--providers.docker.network=pg_playground"
         ports:
             - 80:80
-
         volumes:
             - "//var/run/docker.sock:/var/run/docker.sock:ro"
-
         deploy:
             placement:
                 constraints:
                     - node.role == manager
         networks:
             - playground
+        secrets:
+            - PG_JAEGER_BASIC_AUTH
 
     jaeger:
         image: jaegertracing/all-in-one:1.46
@@ -67,19 +65,6 @@ services:
                 "--log-level=error",
                 "--span-storage.type=elasticsearch",
             ]
-        ports:
-            - 6831:6831/udp
-            - 6832:6832/udp
-
-            - 5778:5778
-            - 16685:16685
-            - 16686:16686
-            - 14268:14268
-            - 14269:14269
-            - 14250:14250
-            - 9411:9411
-            - 4317:4317
-            - 4318:4318
         networks:
             - playground
         deploy:
@@ -89,17 +74,12 @@ services:
                 - "traefik.http.routers.jaeger.entrypoints=web"
                 - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
                 - "traefik.http.routers.jaeger.middlewares=myauth"
-                #- "traefik.http.middlewares.myauth.basicauth.users=logs:$$2a$$12$$IJm.H6aol9cq5jTwip.spOina7czuNH2XM1qcd6jXqFptIAB2CBGO"
+                # secret must be made available for traefik service!
+                # basic auth password must be bcrypt hashed
                 - "traefik.http.middlewares.myauth.basicauth.usersfile=/run/secrets/PG_JAEGER_BASIC_AUTH"
-
-        secrets:
-            - PG_JAEGER_BASIC_AUTH
 
     elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
-        ports:
-            - "9200:9200"
-            - "9300:9300"
         environment:
             - cluster.name=jaeger-cluster
             - discovery.type=single-node
