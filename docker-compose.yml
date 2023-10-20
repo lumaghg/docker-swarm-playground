@@ -11,8 +11,7 @@ secrets:
 services:
     swarm-hello-world:
         image: lumaghg/swarm-hello-world:20231017.20
-        environment:
-            - port=4000
+        # app running on 4000
         deploy:
             labels:
                 - "traefik.enable=true"

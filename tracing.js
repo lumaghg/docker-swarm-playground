@@ -11,15 +11,12 @@ const { MongoDBInstrumentation } = require("@opentelemetry/instrumentation-mongo
 const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 const { registerInstrumentations } = require("@opentelemetry/instrumentation");
 const { JaegerExporter } = require("@opentelemetry/exporter-jaeger");
-const { OTLPTraceExporter } = require('@opentelemetry/exporter-trace-otlp-http');
 const { JaegerPropagator } = require("@opentelemetry/propagator-jaeger");
 
 
 //Exporter
 module.exports = (serviceName) => {
-    //const exporter = new ConsoleSpanExporter();
     const exporter = new JaegerExporter({ endpoint: "http://jaeger:14268/api/traces" })
-    //const exporter = new OTLPTraceExporter({ url: "http://jaeger:4318/v1/traces" });
     const provider = new NodeTracerProvider({
         resource: new Resource({
             [SemanticResourceAttributes.SERVICE_NAME]: serviceName,

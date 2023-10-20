@@ -1,50 +1,49 @@
-const tracer = require("./tracing")("todo-service");
+const tracer = require("./tracing")("swarm-hello-world");
 const express = require('express')
 const dotenv = require('dotenv')
 const api = require("@opentelemetry/api");
-const { W3CTraceContextPropagator } = require("@opentelemetry/core");
-const { JaegerPropagator } = require("@opentelemetry/propagator-jaeger");
-
 
 dotenv.config()
-
-
 
 const app = express()
 
 app.get('/', (req, res) => {
-    res.send("This is Version 10.0\n<br>This is the time: " + new Date())
+    res.send("Timestamp: " + new Date())
 })
 
 app.get('/health', async (req, res) => {
-    const span = tracer.startSpan('healthcheck...', { startTime: Date.now() })
-    console.log('/health called')
+    const span = tracer.startSpan('healthcheck', { startTime: Date.now() })
     await new Promise(resolve => setTimeout(resolve, 1000));
-    span.end()
+    span.end();
 
-    res.json({ headers: JSON.stringify(req.headers) })
+    res.json({ healthy: true });
 })
 
 app.get('/crash', (req, res) => {
-    tracer.startActiveSpan('crashing', span => {
-        span.addEvent('starting operation')
+    tracer.startActiveSpan('simulate crash', span => {
+        span.addEvent('starting operation');
 
-        span.addEvent('crashed!', {
-            'custom.testattr'
-                : 'meeeeeem hier kann der request body hin :)', 'custom.headers': JSON.stringify(req.headers), 'custom.baseurl': JSON.stringify(req.baseUrl)
-        })
-        span.setStatus({ code: api.SpanStatusCode.ERROR })
-        span.end()
+        try {
+            throw new Error("CRASH!");
+        } catch (e) {
+            span.addEvent('operation crashed!', {
+                'message': e.message,
+                'request_headers': JSON.stringify(req.headers)
+            })
+            span.setStatus({ code: api.SpanStatusCode.ERROR })
 
-        res.status(500).send("CRASH!")
+            res.status(500).send("CRASH!")
+        }
+        finally {
+            span.end()
+        }
     })
 })
 
 console.log("starting up...")
-setTimeout(() => {
-    app.listen(process.env.port, () => {
-        console.log(`Example app listening on port ${process.env.port}`)
+app.listen(4000, () => {
+    console.log(`Example app listening on port ${process.env.port}`)
 
-    })
+})
 
-}, 10000)
+
