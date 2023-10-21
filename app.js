@@ -42,7 +42,7 @@ app.get('/crash', (req, res) => {
 
 console.log("starting up...")
 app.listen(4000, () => {
-    console.log(`Example app listening on port ${process.env.port}`)
+    console.log(`Example app listening on port 4000`)
 
 })
 
