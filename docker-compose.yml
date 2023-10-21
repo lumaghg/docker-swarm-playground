@@ -37,6 +37,7 @@ services:
             - "--tracing.jaeger.samplingServerURL=http://jaeger:5778/sampling"
             - "--tracing.jaeger.localAgentHostPort=jaeger:6831"
             - "--tracing.jaeger.propagation=jaeger"
+            - "--tracing.jaeger.disableAttemptReconnecting=false"
             - "--api.insecure=true"
             - "--providers.docker.network=pg_playground"
         ports:
