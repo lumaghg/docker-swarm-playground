@@ -81,7 +81,7 @@ services:
                 - "traefik.http.middlewares.myauth.basicauth.usersfile=/run/secrets/PG_JAEGER_BASIC_AUTH"
 
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:6.3.1
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
         environment:
             - cluster.name=jaeger-cluster
             - discovery.type=single-node
